@@ -1,0 +1,27 @@
+# Bike Sharing Analysis API - Requirements
+# Python 3.9+
+
+# Web Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Machine Learning
+scikit-learn>=1.3.0
+joblib>=1.3.0
+
+# Database
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+
+# API utilities
+python-multipart>=0.0.6
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# Development (optional)
+pytest>=7.4.0
+httpx>=0.25.0

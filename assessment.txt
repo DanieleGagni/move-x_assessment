@@ -1,0 +1,31 @@
+OBJECTIVE
+Develop a backend application that:
+1. Analyses a real dataset (mobility, e.g. bike sharing, bus, or urban traffic).
+2. Exposes REST APIs for:
+   - loading of the dataset
+   - queries on aggregated statistics,
+   - future predictions (via simple ML model),
+   - downloading of processed results.
+
+PROJECT REQUIREMENTS
+
+DATA
+- Recommended dataset: "Bike Sharing Dataset - UCI"(https://archive.ics.uci.edu/dataset/275/bike+sharing+dataset) or a similar open dataset.
+- The dataset must be saved in a database of your choice (e.g. SQLite, PostgreSQL, MongoDB).
+
+BACKEND
+- Write an application in Python (FastAPI/Flask) or Go (Gin/Gorilla) that:
+  - Allows loading of the dataset via endpoint.
+  - Displays aggregate statistics (e.g. average usage per hour/day).
+  - Offers a simple prediction (e.g. number of future rentals) via a trained model (e.g. regression, decision tree).
+  - Exposes an endpoint for downloading the analysis in CSV.
+
+ML MODEL
+- Something simple and explainable (e.g. linear regression or decision tree).
+- Offline training, real-time use via API.
+
+RECOMMENDED TECHNOLOGIES
+- Python: pandas, scikit-learn, FastAPI/Flask, SQLAlchemy or pymongo.
+- Golang: Gin or Gorilla, ML libraries such as Gorgonia (optional).
+- Container: Simple Dockerfile optional.
+- DB: choice of SQL or NoSQL (e.g. PostgreSQL, MongoDB).
