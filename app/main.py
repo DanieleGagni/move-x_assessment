@@ -35,8 +35,6 @@ app = FastAPI(
 )
 
 
-# ==================== ROOT ENDPOINT ====================
-
 @app.get("/")
 def read_root():
     """Root endpoint with API information"""
@@ -60,8 +58,6 @@ def hello_world():
     return {"message": "Hello World!"}
 
 
-# ==================== LOAD DATASET ENDPOINT ====================
-
 @app.post("/load-dataset")
 def load_dataset(
     file: Optional[UploadFile] = File(None),
@@ -73,7 +69,7 @@ def load_dataset(
     
     Options:
     1. Upload a CSV file
-    2. Load from default location (data/hour.csv)
+    2. Load from default location (example: data/hour.csv)
     
     Returns count of records loaded.
     """
@@ -152,8 +148,6 @@ def load_dataset(
         )
 
 
-# ==================== SHARED STATISTICS FUNCTION ====================
-
 def calculate_statistics(
     db: Session,
     group_by: str,
@@ -167,7 +161,7 @@ def calculate_statistics(
     filter_hour: Optional[int] = None
 ) -> dict:
     """
-    Shared function to calculate aggregated statistics.
+    Function to calculate aggregated statistics.
     Used by both /statistics and /export endpoints.
     
     Returns a dictionary with query info, summary, and results.
@@ -324,8 +318,6 @@ def calculate_statistics(
     }
 
 
-# ==================== STATISTICS ENDPOINT ====================
-
 @app.get("/statistics")
 def get_statistics(
     group_by: str = Query("hour", enum=["hour", "weekday", "month", "season", "weather", "holiday", "workingday"]),
@@ -377,8 +369,6 @@ def get_statistics(
         )
 
 
-# ==================== EXPORT ENDPOINT ====================
-
 @app.get("/export")
 def export_statistics(
     group_by: str = Query("hour", enum=["hour", "weekday", "month", "season", "weather", "holiday", "workingday"]),
@@ -411,7 +401,6 @@ def export_statistics(
     Returns downloadable CSV file with aggregated statistics.
     """
     try:
-        # Get statistics using shared function
         stats = calculate_statistics(
             db=db,
             group_by=group_by,
@@ -456,7 +445,6 @@ def export_statistics(
             detail=f"Export error: {str(e)}"
         )
 
-# ==================== PREDICTION ENDPOINT ====================
 
 @app.post("/predict")
 def predict_rentals(
@@ -533,8 +521,6 @@ def predict_rentals(
             detail=f"Prediction error: {str(e)}"
         )
 
-
-# ==================== COMPLEX PREDICTION ENDPOINT ====================
 
 @app.post("/predict_complex")
 def predict_rentals_complex(
@@ -647,8 +633,6 @@ def predict_rentals_complex(
         )
 
 
-# ==================== HEALTH CHECK ENDPOINT ====================
-
 @app.get("/health")
 def health_check(db: Session = Depends(get_db)):
     """
@@ -678,14 +662,30 @@ def health_check(db: Session = Depends(get_db)):
     
     # Check ML model
     if predictor.model is not None:
-        health_status["components"]["ml_model"] = {
+        health_status["components"]["ml_model_simple"] = {
             "status": "loaded",
-            "features": predictor.feature_names
+            "features": predictor.feature_names,
+            "endpoint": "/predict"
         }
     else:
-        health_status["components"]["ml_model"] = {
+        health_status["components"]["ml_model_simple"] = {
             "status": "not_loaded",
-            "message": "Model needs to be trained and saved in models/ directory"
+            "message": "Train using: python scripts/train_model.py",
+            "endpoint": "/predict"
+        }
+    
+    # Check full ML model
+    if predictor_complex.model is not None:
+        health_status["components"]["ml_model_full"] = {
+            "status": "loaded",
+            "features": predictor_complex.feature_names,
+            "endpoint": "/predict_complex"
+        }
+    else:
+        health_status["components"]["ml_model_full"] = {
+            "status": "not_loaded",
+            "message": "Train using: python scripts/train_model_full.py",
+            "endpoint": "/predict_complex"
         }
     
     return health_status

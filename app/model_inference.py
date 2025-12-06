@@ -159,14 +159,11 @@ class BikeRentalPredictor:
         return None
 
 
-# ==================== SIMPLE MODEL (5 features) ====================
-# Global predictor instance for the simple model
-# This is loaded once when the module is imported
+# Simple model (5 features)
 predictor = BikeRentalPredictor()
 
 
-# ==================== FULL MODEL (12 features) ====================
-# Full feature set for maximum accuracy
+# Full model (12 features)
 FULL_FEATURE_NAMES = [
     'season', 'yr', 'mnth', 'hr', 'holiday', 'weekday', 'workingday',
     'weathersit', 'temp', 'atemp', 'hum', 'windspeed'
