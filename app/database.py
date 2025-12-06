@@ -1,10 +1,12 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Database configuration
-# TODO il DB url deve essere costruito a partire dalle variabili d'ambiente [?]
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/bikedb"
+# Database configuration from environment variable
+# Default works for local development, docker-compose overrides it
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/bikedb")
 
 # Create SQLAlchemy engine
 engine = create_engine(
