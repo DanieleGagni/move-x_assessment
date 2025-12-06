@@ -11,7 +11,7 @@ from pathlib import Path
 
 from app.database import get_db, init_db
 from app.models import BikeRental
-from app.ml_model import predictor
+from app.model_inference import predictor
 
 
 # Lifespan context manager for startup/shutdown
@@ -458,8 +458,92 @@ def export_statistics(
 # ==================== PREDICTION ENDPOINT ====================
 
 @app.post("/predict")
-def predict()
-    # TODO
+def predict_rentals(
+    season: int = Query(..., ge=1, le=4, description="Season (1:spring, 2:summer, 3:fall, 4:winter)"),
+    yr: int = Query(..., ge=0, le=1, description="Year (0:2011, 1:2012)"),
+    mnth: int = Query(..., ge=1, le=12, description="Month (1-12)"),
+    hr: int = Query(..., ge=0, le=23, description="Hour of day (0-23)"),
+    holiday: int = Query(..., ge=0, le=1, description="Is holiday? (0:no, 1:yes)"),
+    weekday: int = Query(..., ge=0, le=6, description="Day of week (0:Sunday - 6:Saturday)"),
+    workingday: int = Query(..., ge=0, le=1, description="Is working day? (0:no, 1:yes)"),
+    weathersit: int = Query(..., ge=1, le=4, description="Weather (1:clear, 2:mist, 3:light rain/snow, 4:heavy rain/snow)"),
+    temp: float = Query(..., ge=0, le=1, description="Normalized temperature (0-1)"),
+    atemp: float = Query(..., ge=0, le=1, description="Normalized feeling temperature (0-1)"),
+    hum: float = Query(..., ge=0, le=1, description="Normalized humidity (0-1)"),
+    windspeed: float = Query(..., ge=0, le=1, description="Normalized wind speed (0-1)")
+):
+    """
+    Predict bike rental count based on weather and time features.
+    
+    Uses a trained Random Forest model to predict the number of bike rentals.
+    All input values should be normalized as in the original dataset.
+    
+    Returns predicted number of bike rentals.
+    """
+    try:
+        # Check if model is loaded
+        if predictor.model is None:
+            raise HTTPException(
+                status_code=503,
+                detail="ML model not loaded. Please train the model using: python scripts/train_model.py"
+            )
+        
+        # Prepare features dictionary (must match training features order)
+        features = {
+            'season': season,
+            'yr': yr,
+            'mnth': mnth,
+            'hr': hr,
+            'holiday': holiday,
+            'weekday': weekday,
+            'workingday': workingday,
+            'weathersit': weathersit,
+            'temp': temp,
+            'atemp': atemp,
+            'hum': hum,
+            'windspeed': windspeed
+        }
+        
+        # Make prediction
+        prediction = predictor.predict(features)
+        
+        # Human-readable labels
+        season_names = {1: "Spring", 2: "Summer", 3: "Fall", 4: "Winter"}
+        weather_names = {
+            1: "Clear/Partly Cloudy",
+            2: "Mist/Cloudy",
+            3: "Light Snow/Rain",
+            4: "Heavy Rain/Snow"
+        }
+        weekday_names = {
+            0: "Sunday", 1: "Monday", 2: "Tuesday", 3: "Wednesday",
+            4: "Thursday", 5: "Friday", 6: "Saturday"
+        }
+        
+        return {
+            "predicted_rentals": prediction,
+            "input_features": features,
+            "context": {
+                "season": season_names.get(season, "Unknown"),
+                "month": mnth,
+                "hour": f"{hr}:00",
+                "weekday": weekday_names.get(weekday, "Unknown"),
+                "weather": weather_names.get(weathersit, "Unknown"),
+                "is_holiday": bool(holiday),
+                "is_workingday": bool(workingday),
+                "temperature": f"{temp * 41:.1f}°C (normalized: {temp})",
+                "humidity": f"{hum * 100:.0f}%"
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Prediction error: {str(e)}"
+        )
+    
 
 
 
