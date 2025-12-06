@@ -38,8 +38,8 @@ logger = logging.getLogger(__name__)
 
 # Feature columns used for training
 FEATURE_COLUMNS = [
-    'season', 'yr', 'mnth', 'hr', 'holiday', 'weekday', 'workingday',
-    'weathersit', 'temp', 'atemp', 'hum', 'windspeed' ]
+    'season', 'hr', 'weekday', 'workingday', 'weathersit'
+]
 
 
 # Target column
@@ -91,61 +91,17 @@ def prepare_features(df: pd.DataFrame) -> tuple:
     return X, y
 
 
-def get_model(model_type: str):
-    """
-    Get a model instance based on type.
-    
-    Args:
-        model_type: Type of model ('random_forest', 'gradient_boosting', 
-                   'decision_tree', 'linear', 'ridge')
-    
-    Returns:
-        Scikit-learn model instance.
-    """
-    models = {
-        'random_forest': RandomForestRegressor(
-            n_estimators=150,
-            max_depth=15,          
-            min_samples_split=7,   
-            min_samples_leaf=3,    
-            random_state=42,
-            n_jobs=-1
-        ),
-        'gradient_boosting': GradientBoostingRegressor(
-            n_estimators=100,
-            max_depth=8,
-            learning_rate=0.1,
-            random_state=42
-        ),
-        'decision_tree': DecisionTreeRegressor(
-            max_depth=15,
-            min_samples_split=5,
-            min_samples_leaf=2,
-            random_state=42
-        ),
-        'linear': LinearRegression(),
-        'ridge': Ridge(alpha=1.0)
-    }
-    
-    if model_type not in models:
-        raise ValueError(f"Unknown model type: {model_type}. Choose from: {list(models.keys())}")
-    
-    return models[model_type]
-
-
-def train_model(X: np.ndarray, y: np.ndarray, model_type: str = 'random_forest'):
+def train_model(X: np.ndarray, y: np.ndarray):
     """
     Train the model and evaluate performance.
     
     Args:
         X: Feature matrix.
         y: Target vector.
-        model_type: Type of model to train.
     
     Returns:
         Trained model instance.
     """
-    logger.info(f"Training {model_type} model...")
     
     # Split data
     X_train, X_test, y_train, y_test = train_test_split(
@@ -156,7 +112,14 @@ def train_model(X: np.ndarray, y: np.ndarray, model_type: str = 'random_forest')
     logger.info(f"Test set size: {len(X_test)}")
     
     # Get and train model
-    model = get_model(model_type)
+    model = RandomForestRegressor(
+            n_estimators=150,
+            max_depth=15,          
+            min_samples_split=7,   
+            min_samples_leaf=3,    
+            random_state=42,
+            n_jobs=-1
+    )
     model.fit(X_train, y_train)
     
     # Evaluate on training set
@@ -224,13 +187,6 @@ def main():
         help='Path to the training data CSV file'
     )
     parser.add_argument(
-        '--model', '-m',
-        type=str,
-        default='random_forest',
-        choices=['random_forest', 'gradient_boosting', 'decision_tree', 'linear', 'ridge'],
-        help='Type of model to train'
-    )
-    parser.add_argument(
         '--output', '-o',
         type=str,
         default='models/bike_rental_model.joblib',
@@ -250,7 +206,7 @@ def main():
         X, y = prepare_features(df)
         
         # Train model
-        model = train_model(X, y, model_type=args.model)
+        model = train_model(X, y)
         
         # Save model
         save_model(model, args.output)

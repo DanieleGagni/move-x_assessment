@@ -25,8 +25,7 @@ class BikeRentalPredictor:
     
     # Features used for prediction (must match training features in train_model.py)
     FEATURE_NAMES: List[str] = [
-        'season', 'yr', 'mnth', 'hr', 'holiday', 'weekday', 'workingday',
-        'weathersit', 'temp', 'atemp', 'hum', 'windspeed'
+        'season', 'hr', 'weekday', 'workingday', 'weathersit'
     ]
     
     def __init__(self, model_path: Optional[str] = None):
@@ -160,6 +159,19 @@ class BikeRentalPredictor:
         return None
 
 
-# Global predictor instance
+# ==================== SIMPLE MODEL (5 features) ====================
+# Global predictor instance for the simple model
 # This is loaded once when the module is imported
 predictor = BikeRentalPredictor()
+
+
+# ==================== FULL MODEL (12 features) ====================
+# Full feature set for maximum accuracy
+FULL_FEATURE_NAMES = [
+    'season', 'yr', 'mnth', 'hr', 'holiday', 'weekday', 'workingday',
+    'weathersit', 'temp', 'atemp', 'hum', 'windspeed'
+]
+
+# Create a second predictor for the full model
+predictor_complex = BikeRentalPredictor(model_path="models/bike_rental_model_full.joblib")
+predictor_complex.feature_names = FULL_FEATURE_NAMES
